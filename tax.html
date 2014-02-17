@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Tax</title>
+
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+	<script src="tax.js"></script>
+</head>
+<body>
+	
+	<label for="salary">Salary</label>
+	<input type="text" id="salary"/>
+
+	<label><input type="checkbox" id="blind"> Blind</label>
+	<label><input type="checkbox" id="studentLoan"> Student Loan</label>
+
+	<select id="age" name="age">
+		<option selected="selected" value="under-65">under 65</option>
+		<option value="65-74">65 - 74</option>
+		<option value="75+">over 75</option>
+	</select>
+
+	<input type="submit" id="submit">
+
+	<h2>Taxable</h2>
+	<div id="taxable"></div>
+
+
+	<h2>Taxed</h2>
+	<div id="taxed">
+		
+	</div>
+
+	<h2>National Insurance</h2>
+	<div id="nic"></div>
+
+	<h2>Student Loan</h2>
+
+	<div id="studentLoanRepayment"></div>
+
+	<hr>
+	
+	<h2>Total Deductions</h2>
+	<div id="deductions"></div>
+	
+	<hr>
+
+	<h2>Total Salary</h2>
+
+	<div id="total"></div>
+
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>QUnit Test Suite</title>
+	<link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-1.14.0.css" type="text/css" media="screen">
+	<script type="text/javascript" src="http://code.jquery.com/qunit/qunit-1.14.0.js"></script>
+	<!-- Your project file goes here -->
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+	<script type="text/javascript" src="tax.js"></script>
+	<!-- Your tests file goes here -->
+	<script>
+
+	test('Tax calculator - Get Taxable', function() {
+		equal( taxCalc.getTaxable(30000,'under-65', false), 20560, '30,000, under 65 , not blind = 20,560');
+		equal( taxCalc.getTaxable(30000,'under-65', true), 18400, '30,000, under 65 , blind = 18,400');
+		equal( taxCalc.getTaxable(16000,'under-65', false), 6560, '16,000, under 65 , not blind = 6,560');
+	});
+
+	test('Tax calculator - Get Tax', function(){
+		equal(taxCalc.getTax(18400).total, 3680, 'Tax on 18400 is 3680');
+		equal(taxCalc.getTax(18400).bands[0].ammount, 0, 'Tax on 18400 band 3 is 0');
+		equal(taxCalc.getTax(18400).bands[1].ammount, 0, 'Tax on 18400 band 2 is 0');
+		equal(taxCalc.getTax(18400).bands[2].ammount, 3680, 'Tax on 18400 band 1 is 3680');
+	});
+
+	</script>
+</head>
+<body>
+	<h1 id="qunit-header">QUnit Test Suite</h1>
+	<h2 id="qunit-banner"></h2>
+	<div id="qunit-testrunner-toolbar"></div>
+	<h2 id="qunit-userAgent"></h2>
+	<ol id="qunit-tests"></ol>
+</body>
+</html>
