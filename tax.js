@@ -46,27 +46,6 @@ var config = {
 	}
 }
 
-// config = {
-// 	'allowance' : 8105,
-// 	'bands' : [
-// 		{
-// 			'lower' : 0,
-// 			'upper' : 34370,
-// 			'percent' : 20
-// 		},
-// 		{
-// 			'lower' : 34370,
-// 			'upper' : 150000,
-// 			'percent' : 40
-// 		},
-// 		{
-// 			'lower' : 150000,
-// 			'upper' : '',
-// 			'percent' : 50
-// 		}
-// 	]
-// }
-
 var taxCalc = {}
 
 taxCalc.getTaxable = function(salary, age, blind){
@@ -92,14 +71,11 @@ taxCalc.getTaxable = function(salary, age, blind){
 				newAllowance = config.allowance['under-65'];
 			}
 
-			//taxable = salary - (newAllowance + allowance) ;
-
 			allowance += newAllowance;
 
 		}
 
 	}else{
-		//taxable = salary - (config.allowance[age] + allowance);
 
 		allowance+= config.allowance[age];
 	}
@@ -157,8 +133,6 @@ taxCalc.getTax = function(taxable){
 			'ammount' : amt
 		}
 
-		//console.log('running total', runningTotal);
-
 		tax.total += amt;
 
 	});
@@ -178,8 +152,6 @@ taxCalc.getNIC = function(salary){
 
 	bands.reverse();
 
-	//console.log(bands);
-
 	$.each(bands, function(index, val){
 
 		var amt = 0;
@@ -193,8 +165,6 @@ taxCalc.getNIC = function(salary){
 			'percent' : val.percent,
 			'ammount' : amt
 		}
-
-		//console.log('running total', runningTotal);
 
 		nic.total += amt;
 
@@ -225,8 +195,6 @@ $(document).ready(function(){
 
 		$('#taxable').text(taxCalc.getTaxable(salary, age, blind));
 
-		//console.log('blind', blind);
-
 		var taxable = taxCalc.getTaxable(salary, age, blind);
 
 		var taxed = taxCalc.getTax(taxable);
@@ -236,8 +204,6 @@ $(document).ready(function(){
 		var studentLoan = ($('#studentLoan').is(':checked')) ? taxCalc.getStudentLoan(salary) : 0;
 
 		var deductions = taxed.total + nic.total + studentLoan;
-
-		//console.log('taxed', taxed)
 
 		var html ='';
 		$.each(taxed.bands, function(index, val){
