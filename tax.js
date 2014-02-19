@@ -43,12 +43,13 @@ var config = {
 	'studentLoan' : {
 		'lower' : 16365,
 		'percent' : 9
-	}
+	},
+	'taxcodeAddition': '9'
 }
 
 var taxCalc = {}
 
-taxCalc.getTaxable = function(salary, age, blind){
+taxCalc.getTaxable = function(salary, age, blind, childcare){
 
 	//todo workout starting allowance first then workout actuall allowance then taxable = salary - allowance;
 
@@ -57,6 +58,10 @@ taxCalc.getTaxable = function(salary, age, blind){
 
 	if(blind){
 		allowance += config.allowance.blind;
+	}
+
+	if(childcare>0){
+		allowance += childcare;
 	}
 
 	if(age !== 'under-65'){
@@ -140,6 +145,10 @@ taxCalc.getTax = function(taxable){
 	return tax;
 }
 
+taxCalc.getTaxAtRate = function(amt, rate){
+	return amt * taxCalc.percentAsDecimal(rate);
+}
+
 taxCalc.getNIC = function(salary){
 
 	var nic = {
@@ -185,6 +194,76 @@ taxCalc.getStudentLoan = function(salary){
 	return Math.floor(studentLoan);
 }
 
+taxCalc.getTaxFromTaxcode = function(salary, code){
+
+	//This function makes an attempt to interpret the tax code and then provide a calculation based on it.
+
+	var emergancy = false;
+
+	code = code.toUpperCase();
+
+	if(code.indexOf('M1')>=0 || code.indexOf('W1')){
+		code = code.replace(/(W|M)1/g, '');
+		emergancy = true;
+		console.log(code);
+	}
+
+	var letters = code.replace(/[0-9]/g, '');
+	var numbers = code.replace(/[^0-9]/g,'');
+
+	var tax;
+
+	switch (code) {
+		case 'BR':
+		tax = taxCalc.getTaxAtRate(salary, config.bands[0].percent);
+		break;
+
+		case 'D0':
+		tax = taxCalc.getTaxAtRate(salary, config.bands[1].percent);
+		break;
+
+		case 'D1':
+		tax = taxCalc.getTaxAtRate(salary, config.bands[2].percent);
+		break;
+
+		case 'NT':
+		tax = 0;
+
+		break
+
+		case '0T':
+		tax = taxCalc.getTax(salary);
+
+		break;
+	}
+
+	// K tax codes are special, the numbers indicate an ammount to add to the salary to tax. It can't tak emore than 50% though.
+
+	if(code.indexOf('K')>=0){
+		tax = taxCalc.getTax(salary+(numbers*10));
+
+		tax.total = (tax.total>salary/2) ? salary/2 : tax.total;
+	}
+
+	var otherLetters = ['L', 'P', 'Y', 'T'];
+
+	for (var i = 0; i < otherLetters.length; i++) {
+
+		if(code.indexOf(otherLetters[i])>=0){
+
+			//add a 9 to the end to get your personal allowance, because HMRC are crazy like that.
+
+			var allowance = numbers.toString() + config.taxcodeAddition;
+			allowance = parseFloat(allowance, 10);
+
+			tax = taxCalc.getTax(salary-allowance);
+		}
+	};
+
+	return tax;
+
+}
+
 $(document).ready(function(){
 
 	$('#submit').on('click', function(){
@@ -193,9 +272,24 @@ $(document).ready(function(){
 		var age = $('#age').val();
 		var blind = $('#blind').is(':checked');
 
+		var childcare = $('#childcare').val();
+		var childcareFreq = $('#childcareFreq').val();
+
+		if(childcare != '' && parseFloat(childcare)>0){
+			
+			if(childcareFreq == 'weekly'){
+				childcare = parseFloat(childcare) * 52;
+			}else if(childcareFreq == 'monthly'){
+				childcare = parseFloat(childcare) * 12;
+			}
+
+		}else{
+			childcare = 0;
+		}
+
 		$('#taxable').text(taxCalc.getTaxable(salary, age, blind));
 
-		var taxable = taxCalc.getTaxable(salary, age, blind);
+		var taxable = taxCalc.getTaxable(salary, age, blind, childcare);
 
 		var taxed = taxCalc.getTax(taxable);
 
