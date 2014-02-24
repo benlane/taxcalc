@@ -49,7 +49,7 @@ var config = {
 
 var taxCalc = {}
 
-taxCalc.getTaxable = function(salary, age, blind, childcare){
+taxCalc.getTaxable = function(salary, age, blind, childcare, pension){
 
 	//todo workout starting allowance first then workout actuall allowance then taxable = salary - allowance;
 
@@ -62,6 +62,10 @@ taxCalc.getTaxable = function(salary, age, blind, childcare){
 
 	if(childcare>0){
 		allowance += childcare;
+	}
+
+	if(pension>0){
+		allowance += pension;
 	}
 
 	if(age !== 'under-65'){
@@ -268,13 +272,16 @@ $(document).ready(function(){
 
 	$('#submit').on('click', function(){
 		
+		//get all the values of inputs
 		var salary = $('#salary').val();
 		var age = $('#age').val();
 		var blind = $('#blind').is(':checked');
-
 		var childcare = $('#childcare').val();
 		var childcareFreq = $('#childcareFreq').val();
+		var pension = $('#pension').val();
+		var pensionType = $('#pensionType').val();
 
+		//workout childcare TODO there is somethign about pre certain date for higher earners
 		if(childcare != '' && parseFloat(childcare)>0){
 			
 			if(childcareFreq == 'weekly'){
@@ -287,25 +294,48 @@ $(document).ready(function(){
 			childcare = 0;
 		}
 
-		$('#taxable').text(taxCalc.getTaxable(salary, age, blind));
+		//workout pension contributions TODO: there is an upper limit to pension contributions 50,000?
+		if(pension != '' && parseFloat(pension)>0){
 
-		var taxable = taxCalc.getTaxable(salary, age, blind, childcare);
+			if(pensionType == 'amount'){
+				pension = parseFloat(pension);
+			}else if(pensionType == 'percentage'){
+				pension = parseFloat(salary) * taxCalc.percentAsDecimal(pension);
+			}
 
+		}else{
+			pension = 0;
+		}
+
+		//TODO : something to do with married couples allowance over 65s?
+
+		//get the taxable amount
+		var taxable = taxCalc.getTaxable(salary, age, blind, childcare, pension);
+
+		//get the tax on the taxable amount
 		var taxed = taxCalc.getTax(taxable);
 
+		//get the National Insurance Contribution  TODO: over certain age no NIC is due.
 		var nic = taxCalc.getNIC(salary);
 
+		//get student load inf applicable
 		var studentLoan = ($('#studentLoan').is(':checked')) ? taxCalc.getStudentLoan(salary) : 0;
 
-		var deductions = taxed.total + nic.total + studentLoan;
+		//get total deductions
+		var deductions = taxed.total + nic.total + studentLoan + pension;
 
+		//display taxable amount
+		$('#taxable').text(taxable);
+
+		//display the tax at certain bands
 		var html ='';
 		$.each(taxed.bands, function(index, val){
 			html += '<h3>'+val.percent+'% Band</h3> <p>&pound;'+val.ammount+'</p>'
-		})
+		});
 
 		html += '<h3>Total</h3> <p><strong>&pound;'+taxed.total+'</strong></p>'
 
+		//display calculations
 		$('#taxed').html(html);
 		$('#nic').html(nic.total);
 		$('#studentLoanRepayment').html(studentLoan);
